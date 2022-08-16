@@ -21,4 +21,4 @@ jobs:
         run: |
           docker buildx build --push \
             --tag wpkpda/mysql:5.7.39 \
-            --platform linux/amd64,linux/arm64 .
+            --platform linux/amd64,linux/arm64/v8 .
