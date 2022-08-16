@@ -42,9 +42,13 @@ RUN cd mysql-server \
 
 ENV PATH="${PATH}:/usr/local/mysql/bin"
 
-USER mysql
+VOLUME /var/lib/mysql
 
-COPY docker-entrypoint.sh docker-entrypoint.sh
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["docker-entrypoint.sh"]
 
+USER mysql
+
+EXPOSE 3306 33060
 CMD ["mysqld"]
