@@ -44,7 +44,7 @@ ENV PATH="${PATH}:/usr/local/mysql/bin"
 
 USER mysql
 
-RUN mysqld --initialize --basedir=/usr/local/mysql --datadir=/var/lib/mysql \
-    && mysql_ssl_rsa_setup
+COPY docker-entrypoint.sh docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 CMD ["mysqld"]
