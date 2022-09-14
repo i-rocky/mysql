@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 as builder
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -35,12 +35,33 @@ RUN git clone --single-branch --branch mysql-5.7.39 --depth 1 https://github.com
 
 RUN cd mysql-server \
     && cmake . -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DMYSQL_DATADIR=/var/lib/mysql -DWITH_BOOST=/usr/local/boost_1_59_0 -DSYSCONFDIR=/etc -DEXTRA_CHARSETS=all -DWITH_SSL=/usr/local/openssl \
-    && make \
+    && make  \
     && make install \
-    && cd .. \
-    && rm -rf mysql-server
+    && rm -rf /usr/local/mysql/mysql-test \
+    /usr/local/mysql/README-test \
+    /usr/local/mysql/bin/mysqltest \
+    /usr/local/mysql/bin/mysqltest_embedded \
+    /usr/local/mysql/bin/mysqlxtest \
+    /usr/local/mysql/bin/mysql_client_test \
+    /usr/local/mysql/bin/mysql_client_test_embedded
+
+FROM ubuntu:22.04
+COPY --from=builder /usr/local/mysql /usr/local/mysql
+COPY --from=builder /usr/lib/ssl/openssl.cnf /usr/lib/ssl/openssl.cnf
+COPY --from=builder /usr/bin/openssl /usr/bin/openssl
+COPY --from=builder /usr/local/openssl /usr/local/openssl
+COPY --from=builder /etc/ssl/openssl.cnf /etc/ssl/openssl.cnf
 
 ENV PATH="${PATH}:/usr/local/mysql/bin"
+
+RUN groupadd mysql \
+    && useradd -r -g mysql mysql
+
+RUN mkdir -p /usr/local/mysql \
+    && chown -R mysql.mysql /usr/local/mysql
+
+RUN mkdir -p /var/lib/mysql \
+    && chown -R mysql.mysql /var/lib/mysql
 
 VOLUME /var/lib/mysql
 
